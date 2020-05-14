@@ -118,3 +118,92 @@ Koitaro@MacBook-Pro-3 ~ % docker ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 
 ```
+## Manage Multiple Containers, MySQL, Nginx, HTTPD (apache)
+![manage_multiple_containers](https://github.com/NoriKaneshige/Docker_Creating_Using_Containers/blob/master/manage_multiple_containers.png)
+```
+Koitaro@MacBook-Pro-3 ~ % docker container run -d -p 3306:3306 --name db -e MYSQL_RANDOM_ROOT_PASSWORD=yes MYSQL_RANDOM_ROOT_PASSWORD
+docker: invalid reference format: repository name must be lowercase.
+See 'docker run --help'.
+
+Koitaro@MacBook-Pro-3 ~ % docker container run -d -p 3306:3306 --name db -e MYSQL_RANDOM_ROOT_PASSWORD=yes mysql
+Unable to find image 'mysql:latest' locally
+latest: Pulling from library/mysql
+5b54d594fba7: Pull complete
+07e7d6a8a868: Pull complete
+abd946892310: Pull complete
+dd8f4d07efa5: Pull complete
+076d396a6205: Pull complete
+cf6b2b93048f: Pull complete
+530904b4a8b7: Pull complete
+fb1e55059a95: Pull complete
+4bd29a0dcde8: Pull complete
+b94a001c6ec7: Pull complete
+cb77cbeb422b: Pull complete
+2a35cdbd42cc: Pull complete
+Digest: sha256:dc255ca50a42b3589197000b1f9bab2b4e010158d1a9f56c3db6ee145506f625
+Status: Downloaded newer image for mysql:latest
+c8cf761aae4f1109c7580794d3048c9c22b84fc1b5504bb354e0664ea853f843
+
+Koitaro@MacBook-Pro-3 ~ % docker container logs db
+2020-05-14 23:00:36+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.20-1debian10 started.
+
+Koitaro@MacBook-Pro-3 ~ % docker container run -d --name webserver -p 8080:80 httpd
+Unable to find image 'httpd:latest' locally
+latest: Pulling from library/httpd
+5b54d594fba7: Already exists
+4b53bced9ee8: Pull complete
+33abd7401e3d: Pull complete
+8fb831f2b4d7: Pull complete
+f26db3b1c783: Pull complete
+Digest: sha256:f1d23356c95762858854958be00b66c92f7bf35a88b902575a2afd808e1ab29e
+Status: Downloaded newer image for httpd:latest
+db6fe75cb5fbdb211638e29c9452475e2458a026ad08bf8e861e68c30dd7f866
+
+Koitaro@MacBook-Pro-3 ~ % docker container run -d --name proxy -p 80:80 nginx
+12b3a1de970bf1c7bc902fef672f4b1bfb0dcc46abdbe89688e36da13d048681
+
+Koitaro@MacBook-Pro-3 ~ % docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                               NAMES
+12b3a1de970b        nginx               "nginx -g 'daemon of…"   21 seconds ago      Up 21 seconds       0.0.0.0:80->80/tcp                  proxy
+db6fe75cb5fb        httpd               "httpd-foreground"       48 seconds ago      Up 47 seconds       0.0.0.0:8080->80/tcp                webserver
+c8cf761aae4f        mysql               "docker-entrypoint.s…"   3 minutes ago       Up 3 minutes        0.0.0.0:3306->3306/tcp, 33060/tcp   db
+
+Koitaro@MacBook-Pro-3 ~ % docker container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS                               NAMES
+12b3a1de970b        nginx               "nginx -g 'daemon of…"   38 seconds ago       Up 38 seconds       0.0.0.0:80->80/tcp                  proxy
+db6fe75cb5fb        httpd               "httpd-foreground"       About a minute ago   Up About a minute   0.0.0.0:8080->80/tcp                webserver
+c8cf761aae4f        mysql               "docker-entrypoint.s…"   3 minutes ago        Up 3 minutes        0.0.0.0:3306->3306/tcp, 33060/tcp   db
+
+Koitaro@MacBook-Pro-3 ~ % docker container stop 12b db6 c8c
+12b
+db6
+c8c
+
+Koitaro@MacBook-Pro-3 ~ % docker ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS                      PORTS               NAMES
+12b3a1de970b        nginx               "nginx -g 'daemon of…"   About a minute ago   Exited (0) 18 seconds ago                       proxy
+db6fe75cb5fb        httpd               "httpd-foreground"       2 minutes ago        Exited (0) 17 seconds ago                       webserver
+c8cf761aae4f        mysql               "docker-entrypoint.s…"   4 minutes ago        Exited (0) 17 seconds ago                       db
+3054ecd6b5be        nginx               "nginx -g 'daemon of…"   2 hours ago          Exited (0) 2 hours ago                          mystifying_matsumoto
+
+Koitaro@MacBook-Pro-3 ~ % docker container ls -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                      PORTS               NAMES
+12b3a1de970b        nginx               "nginx -g 'daemon of…"   2 minutes ago       Exited (0) 38 seconds ago                       proxy
+db6fe75cb5fb        httpd               "httpd-foreground"       2 minutes ago       Exited (0) 37 seconds ago                       webserver
+c8cf761aae4f        mysql               "docker-entrypoint.s…"   5 minutes ago       Exited (0) 37 seconds ago                       db
+3054ecd6b5be        nginx               "nginx -g 'daemon of…"   2 hours ago         Exited (0) 2 hours ago                          mystifying_matsumoto
+
+Koitaro@MacBook-Pro-3 ~ % docker container rm 12b db6 c8c 305
+12b
+db6
+c8c
+305
+
+Koitaro@MacBook-Pro-3 ~ % docker ps -a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+
+Koitaro@MacBook-Pro-3 ~ % docker image ls
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+mysql               latest              a0d4d95e478f        19 hours ago        541MB
+httpd               latest              a8a9cbaadb0c        24 hours ago
+```
