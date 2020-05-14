@@ -213,4 +213,4 @@ docker container run -p 80:80 -d nginx
 <br>
 docker container run -p 8080:80 -d nginx
 
-### Correct, just because the containers are both listening on port 80 inside (the right number), there is no conflict because on the host they are published on 80, and 8080 separately (the left number).
+### No. Just because the containers are both listening on port 80 inside (the right number), there is no conflict because on the host they are published on 80, and 8080 separately (the left number).
