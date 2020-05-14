@@ -24,9 +24,11 @@ Server:
   Stopped: 0
 ```
 ## Starting a Nginx Web Server
-## Nginx is an open source web server
-## In the backgroud, docker engine looks for an image called Nginx and pulls down
-## the latest image for Nginx from Dockerhub
+## Nginx is an open source web server. In the backgroud, docker engine looks for an image called Nginx and pulls down the latest image for Nginx from Dockerhub.
+## detach tells docker run in the backgroud. We get a unique container ID. Go to local host to check if the container and server are communication
 ```
 
+```
+## list containers running
+```
 ```
