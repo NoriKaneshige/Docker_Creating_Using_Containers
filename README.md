@@ -93,3 +93,28 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 5. Gives it a virtual IP on a private network inside docker engine
 6. Opens up port 80 on host and forwards to port 80 in container
 7. Starts container by using the CMD in the image Dockerfile
+
+
+
+## Container VS. VM: It's Just a Process. Container is not virtual machine!
+## 'docker ps' sees process, this shows us this is a process on the host, not virtual machine
+## 'ps aux' sees all process list
+```
+Koitaro@MacBook-Pro-3 ~ % docker run --name mongo -d mongo
+df277f731b2db36e4e7c96d6df32ebf04079958cdd370b74df9a2aceac403575
+
+Koitaro@MacBook-Pro-3 ~ % docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS               NAMES
+df277f731b2d        mongo               "docker-entrypoint.s…"   About a minute ago   Up About a minute   27017/tcp           mongo
+
+Koitaro@MacBook-Pro-3 ~ % docker top mongo
+PID                 USER                TIME                COMMAND
+3003                999                 0:08                mongod --bind_ip_all
+
+Koitaro@MacBook-Pro-3 ~ % docker stop mongo
+mongo
+
+Koitaro@MacBook-Pro-3 ~ % docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+
+```
