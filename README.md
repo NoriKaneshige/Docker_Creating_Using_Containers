@@ -25,7 +25,7 @@ Server:
 ```
 ## Starting a Nginx Web Server
 ## Nginx is an open source web server. In the backgroud, docker engine looks for an image called Nginx and pulls down the latest image for Nginx from Dockerhub.
-## detach tells docker run in the backgroud. We get a unique container ID. Go to local host to check if the container and server are communication
+## 'detach' tells docker run in the backgroud. We get a unique container ID. Go to local host to check if the container and server are communication
 ![nginx_running](https://github.com/NoriKaneshige/Docker_Creating_Using_Containers/blob/master/nginx_running.png)
 ## list containers running (ls), stop containers, list all containers (ls -a)
 ```
@@ -69,7 +69,7 @@ PID                 USER                TIME                COMMAND
 2928                101                 0:00                nginx: worker process
 ```
 
-## How to remove containers (rm -f forces a running container to be stopeed and removed)
+## How to remove containers ('rm -f' forces a running container to be stopeed and removed)
 ```
 Koitaro@MacBook-Pro-3 ~ % docker container ls
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                NAMES
