@@ -618,6 +618,6 @@ Koitaro@MacBook-Pro-3 ~ % docker container inspect --format '{{ .NetworkSettings
 172.17.0.2
 ```
 ## Docker container network diaglam
-![docker_network_diaglam](https://github.com/NoriKaneshige/Docker_Creating_Using_Containers/blob/master/docker_network_diaglam.png)
+![docker_network_diaglam_edit](https://github.com/NoriKaneshige/Docker_Creating_Using_Containers/blob/master/docker_network_diaglam_edit.png)
 
 
