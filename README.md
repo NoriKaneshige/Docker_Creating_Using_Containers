@@ -620,4 +620,669 @@ Koitaro@MacBook-Pro-3 ~ % docker container inspect --format '{{ .NetworkSettings
 ## Docker container network diaglam
 ![docker_network_diaglam_edit](https://github.com/NoriKaneshige/Docker_Creating_Using_Containers/blob/master/docker_network_diaglam_edit.png)
 
+# Docker Networks: CLI Management of Virtual Networks
+![cli_management_virtual_network](https://github.com/NoriKaneshige/Docker_Creating_Using_Containers/blob/master/cli_management_virtual_network.png)
+## 'docker network ls' shows all networks that have been created
+```
+Koitaro@MacBook-Pro-3 ~ % docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+129bfe4c822a        blog_default        bridge              local
+6cab703ff816        bridge              bridge              local
+207bfc4fcba6        hello_default       bridge              local
+844bbe7b323d        host                host                local
+f4316fbff2c6        none                null                local
+```
+## With 'docker network inspect', you can see the list of containers attached to the network you specify
+```
+Koitaro@MacBook-Pro-3 ~ % docker network inspect bridge
+[
+    {
+        "Name": "bridge",
+        "Id": "6cab703ff816f435cfb61126c8a0357add03ddb5e126044b2f86584454615812",
+        "Created": "2020-05-15T12:06:54.939210462Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "172.17.0.0/16",
+                    "Gateway": "172.17.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47": {
+                "Name": "webhost",
+                "EndpointID": "ac963d243d44ff263300e64bd2962fa321d565d06b99da62242a9ba9eb4833a7",
+                "MacAddress": "02:42:ac:11:00:02",
+                "IPv4Address": "172.17.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {
+            "com.docker.network.bridge.default_bridge": "true",
+            "com.docker.network.bridge.enable_icc": "true",
+            "com.docker.network.bridge.enable_ip_masquerade": "true",
+            "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+            "com.docker.network.bridge.name": "docker0",
+            "com.docker.network.driver.mtu": "1500"
+        },
+        "Labels": {}
+    }
+]
+```
+## 'docker network create' spawns a new virtual network for you to attach containers to
+## created new virtual network with the driver of bridge (default)
+## we also can specify drivers. Also a lot of IP, network options.
+```
+Koitaro@MacBook-Pro-3 ~ % docker network create my_app_net
+758b53ad1fc92c8f6b024f94cbd46329634c12c6243231fd47a7c215db549991
 
+Koitaro@MacBook-Pro-3 ~ % docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+129bfe4c822a        blog_default        bridge              local
+6cab703ff816        bridge              bridge              local
+207bfc4fcba6        hello_default       bridge              local
+844bbe7b323d        host                host                local
+758b53ad1fc9        my_app_net          bridge              local
+f4316fbff2c6        none                null                local
+
+Koitaro@MacBook-Pro-3 ~ % docker network create --help
+
+Usage:	docker network create [OPTIONS] NETWORK
+
+Create a network
+
+Options:
+      --attachable           Enable manual container attachment
+      --aux-address map      Auxiliary IPv4 or IPv6 addresses used by
+                             Network driver (default map[])
+      --config-from string   The network from which copying the configuration
+      --config-only          Create a configuration only network
+  -d, --driver string        Driver to manage the Network (default "bridge")
+      --gateway strings      IPv4 or IPv6 Gateway for the master subnet
+      --ingress              Create swarm routing-mesh network
+      --internal             Restrict external access to the network
+      --ip-range strings     Allocate container ip from a sub-range
+      --ipam-driver string   IP Address Management Driver (default "default")
+      --ipam-opt map         Set IPAM driver specific options (default map[])
+      --ipv6                 Enable IPv6 networking
+      --label list           Set metadata on a network
+  -o, --opt map              Set driver specific options (default map[])
+      --scope string         Control the network's scope
+      --subnet strings       Subnet in CIDR format that represents a
+                             network segment
+```
+## '--network' can connect a newly created container to a specific network
+## the last one is nginx image
+```
+Koitaro@MacBook-Pro-3 ~ % docker container run -d --name new_nginx --network my_app_net nginx
+6a1189201ac17bc39de61f0aa1c2326f83f613d11b757d46800fb909ea409095
+```
+## We can inspect network on my_app_net to see the new connection between the newly created container and the network my_app_net
+```
+Koitaro@MacBook-Pro-3 ~ % docker network inspect my_app_net
+[
+    {
+        "Name": "my_app_net",
+        "Id": "758b53ad1fc92c8f6b024f94cbd46329634c12c6243231fd47a7c215db549991",
+        "Created": "2020-05-15T14:16:52.3458051Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.19.0.0/16",
+                    "Gateway": "172.19.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "6a1189201ac17bc39de61f0aa1c2326f83f613d11b757d46800fb909ea409095": {
+                "Name": "new_nginx",
+                "EndpointID": "977ff744bdcbcbb72ac9de5ea81787a2d031d386e97e2e050dcae3812443ca28",
+                "MacAddress": "02:42:ac:13:00:02",
+                "IPv4Address": "172.19.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {},
+        "Labels": {}
+    }
+]
+```
+## we also don't need to creat/start a new container to make new connection.
+## we can use existing networks and existing containers
+## check blew if you can see two networks, bridge and my_app_net
+```
+Koitaro@MacBook-Pro-3 ~ % docker network --help
+
+Usage:	docker network COMMAND
+
+Manage networks
+
+Commands:
+  connect     Connect a container to a network
+  create      Create a network
+  disconnect  Disconnect a container from a network
+  inspect     Display detailed information on one or more networks
+  ls          List networks
+  prune       Remove all unused networks
+  rm          Remove one or more networks
+
+Run 'docker network COMMAND --help' for more information on a command.
+
+Koitaro@MacBook-Pro-3 ~ % docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+129bfe4c822a        blog_default        bridge              local
+6cab703ff816        bridge              bridge              local
+207bfc4fcba6        hello_default       bridge              local
+844bbe7b323d        host                host                local
+758b53ad1fc9        my_app_net          bridge              local
+f4316fbff2c6        none                null                local
+Koitaro@MacBook-Pro-3 ~ % docker containers ls
+docker: 'containers' is not a docker command.
+See 'docker --help'
+Koitaro@MacBook-Pro-3 ~ % docker container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                NAMES
+6a1189201ac1        nginx               "nginx -g 'daemon of…"   9 minutes ago       Up 9 minutes        80/tcp               new_nginx
+79d9f7d0e3ac        nginx               "nginx -g 'daemon of…"   About an hour ago   Up About an hour    0.0.0.0:80->80/tcp   webhost
+
+Koitaro@MacBook-Pro-3 ~ % docker network connect 79d9f7d0e3ac 758b53ad1fc9
+Error response from daemon: No such container: 758b53ad1fc9
+
+Koitaro@MacBook-Pro-3 ~ % docker network connect 758b53ad1fc9 79d9f7d0e3ac
+
+Koitaro@MacBook-Pro-3 ~ % docker container inspect 79d9f7d0e3ac
+[
+    {
+        "Id": "79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47",
+        "Created": "2020-05-15T13:48:52.7731615Z",
+        "Path": "nginx",
+        "Args": [
+            "-g",
+            "daemon off;"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 1748,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2020-05-15T13:48:53.2450176Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:602e111c06b6934013578ad80554a074049c59441d9bcd963cb4a7feccede7a5",
+        "ResolvConfPath": "/var/lib/docker/containers/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47/hostname",
+        "HostsPath": "/var/lib/docker/containers/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47/hosts",
+        "LogPath": "/var/lib/docker/containers/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47-json.log",
+        "Name": "/webhost",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "default",
+            "PortBindings": {
+                "80/tcp": [
+                    {
+                        "HostIp": "",
+                        "HostPort": "80"
+                    }
+                ]
+            },
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "CapAdd": null,
+            "CapDrop": null,
+            "Capabilities": null,
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "KernelMemory": 0,
+            "KernelMemoryTCP": 0,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": false,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/837c5e584d9e4853ccda09a649ccb701803e226c4ce9f403f6f20abaadd9ad2c-init/diff:/var/lib/docker/overlay2/93e7578f455a4aef050a3051ac6b78ea6c74147e5a75f9a7a0fa0a29984a247b/diff:/var/lib/docker/overlay2/d5d8301782beba07c5204ef68909df183c5dccdee304180e7652169e19fbadf0/diff:/var/lib/docker/overlay2/2eb8acd308a13b0259762aeda1897e79c72a1f5175b0244f5cccddc1a7dcbfe3/diff",
+                "MergedDir": "/var/lib/docker/overlay2/837c5e584d9e4853ccda09a649ccb701803e226c4ce9f403f6f20abaadd9ad2c/merged",
+                "UpperDir": "/var/lib/docker/overlay2/837c5e584d9e4853ccda09a649ccb701803e226c4ce9f403f6f20abaadd9ad2c/diff",
+                "WorkDir": "/var/lib/docker/overlay2/837c5e584d9e4853ccda09a649ccb701803e226c4ce9f403f6f20abaadd9ad2c/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "79d9f7d0e3ac",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "ExposedPorts": {
+                "80/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "NGINX_VERSION=1.17.10",
+                "NJS_VERSION=0.3.9",
+                "PKG_RELEASE=1~buster"
+            ],
+            "Cmd": [
+                "nginx",
+                "-g",
+                "daemon off;"
+            ],
+            "Image": "nginx",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": {
+                "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
+            },
+            "StopSignal": "SIGTERM"
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "7b88206da129aa77f9b4accfc549c4b4fb36929c383116613ae5c1473f90ab9e",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {
+                "80/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "80"
+                    }
+                ]
+            },
+            "SandboxKey": "/var/run/docker/netns/7b88206da129",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "ac963d243d44ff263300e64bd2962fa321d565d06b99da62242a9ba9eb4833a7",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.2",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:02",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "6cab703ff816f435cfb61126c8a0357add03ddb5e126044b2f86584454615812",
+                    "EndpointID": "ac963d243d44ff263300e64bd2962fa321d565d06b99da62242a9ba9eb4833a7",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:02",
+                    "DriverOpts": null
+                },
+                "my_app_net": {
+                    "IPAMConfig": {},
+                    "Links": null,
+                    "Aliases": [
+                        "79d9f7d0e3ac"
+                    ],
+                    "NetworkID": "758b53ad1fc92c8f6b024f94cbd46329634c12c6243231fd47a7c215db549991",
+                    "EndpointID": "686c5580e81b93b111f4fba997eeefd8deab28b6d94b992e82c4be9c25c1c8f8",
+                    "Gateway": "172.19.0.1",
+                    "IPAddress": "172.19.0.3",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:13:00:03",
+                    "DriverOpts": {}
+                }
+            }
+        }
+    }
+]
+```
+## we can disconnect existing networks and existing containers
+## check blew if you can see only original network, which is bridge
+```
+Koitaro@MacBook-Pro-3 ~ % docker network disconnect 758b53ad1fc9 79d9f7d0e3ac
+Koitaro@MacBook-Pro-3 ~ % docker container inspect 79d9f7d0e3ac
+[
+    {
+        "Id": "79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47",
+        "Created": "2020-05-15T13:48:52.7731615Z",
+        "Path": "nginx",
+        "Args": [
+            "-g",
+            "daemon off;"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 1748,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2020-05-15T13:48:53.2450176Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:602e111c06b6934013578ad80554a074049c59441d9bcd963cb4a7feccede7a5",
+        "ResolvConfPath": "/var/lib/docker/containers/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47/hostname",
+        "HostsPath": "/var/lib/docker/containers/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47/hosts",
+        "LogPath": "/var/lib/docker/containers/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47/79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47-json.log",
+        "Name": "/webhost",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "default",
+            "PortBindings": {
+                "80/tcp": [
+                    {
+                        "HostIp": "",
+                        "HostPort": "80"
+                    }
+                ]
+            },
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "CapAdd": null,
+            "CapDrop": null,
+            "Capabilities": null,
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "KernelMemory": 0,
+            "KernelMemoryTCP": 0,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": false,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/837c5e584d9e4853ccda09a649ccb701803e226c4ce9f403f6f20abaadd9ad2c-init/diff:/var/lib/docker/overlay2/93e7578f455a4aef050a3051ac6b78ea6c74147e5a75f9a7a0fa0a29984a247b/diff:/var/lib/docker/overlay2/d5d8301782beba07c5204ef68909df183c5dccdee304180e7652169e19fbadf0/diff:/var/lib/docker/overlay2/2eb8acd308a13b0259762aeda1897e79c72a1f5175b0244f5cccddc1a7dcbfe3/diff",
+                "MergedDir": "/var/lib/docker/overlay2/837c5e584d9e4853ccda09a649ccb701803e226c4ce9f403f6f20abaadd9ad2c/merged",
+                "UpperDir": "/var/lib/docker/overlay2/837c5e584d9e4853ccda09a649ccb701803e226c4ce9f403f6f20abaadd9ad2c/diff",
+                "WorkDir": "/var/lib/docker/overlay2/837c5e584d9e4853ccda09a649ccb701803e226c4ce9f403f6f20abaadd9ad2c/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "79d9f7d0e3ac",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "ExposedPorts": {
+                "80/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "NGINX_VERSION=1.17.10",
+                "NJS_VERSION=0.3.9",
+                "PKG_RELEASE=1~buster"
+            ],
+            "Cmd": [
+                "nginx",
+                "-g",
+                "daemon off;"
+            ],
+            "Image": "nginx",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": {
+                "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
+            },
+            "StopSignal": "SIGTERM"
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "7b88206da129aa77f9b4accfc549c4b4fb36929c383116613ae5c1473f90ab9e",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {
+                "80/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "80"
+                    }
+                ]
+            },
+            "SandboxKey": "/var/run/docker/netns/7b88206da129",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "ac963d243d44ff263300e64bd2962fa321d565d06b99da62242a9ba9eb4833a7",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.2",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:02",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "6cab703ff816f435cfb61126c8a0357add03ddb5e126044b2f86584454615812",
+                    "EndpointID": "ac963d243d44ff263300e64bd2962fa321d565d06b99da62242a9ba9eb4833a7",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:02",
+                    "DriverOpts": null
+                }
+            }
+        }
+    }
+]
+```
