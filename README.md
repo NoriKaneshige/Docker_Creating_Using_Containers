@@ -591,3 +591,33 @@ docker image ls
 docker container run -it alpine bash
 <br>
 docker container run -it alpine sh
+
+# Docker Networks: Concepts for Private and Public Comms in Containers
+
+## '-p' command exposes the port on your machine
+## Below, exposing port 80 of nginx
+## The left side is host port forwrd traffic from the port into the port 80 of the container
+```
+Koitaro@MacBook-Pro-3 ~ % docker container run -p 80:80 --name webhost -d nginx
+79d9f7d0e3ac977c56e31542fb13f3e26c2f450e5ea2caeddba3ab3151ba6d47
+```
+## Docker network by default
+![docker_network_by_default](https://github.com/NoriKaneshige/Docker_Creating_Using_Containers/blob/master/docker_network_by_default.png)
+
+## 'container port' command shows what ports are open for the container on your network
+when you start a container, you are connecting to a particular docker network, which by default is 'bridge' network. Each network routes out though net firewall. All containers o a virtual network can talk eath other without -p.
+## docker container port [conntainer]
+## Which ports are forwarding traffic to that container from the host into the container itself
+```
+Koitaro@MacBook-Pro-3 ~ % docker container port webhost
+80/tcp -> 0.0.0.0:80
+```
+## check IP address of the container (this is different from IP of host by default)
+```
+Koitaro@MacBook-Pro-3 ~ % docker container inspect --format '{{ .NetworkSettings.IPAddress }}' webhost
+172.17.0.2
+```
+## Docker container network diaglam
+![docker_network_diaglam](https://github.com/NoriKaneshige/Docker_Creating_Using_Containers/blob/master/docker_network_diaglam.png)
+
+
