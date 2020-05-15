@@ -457,3 +457,135 @@ Koitaro@MacBook-Pro-3 ~ % docker container inspect mysql
     }
 ]
 ```
+# Getting a Shell Inside Containers: No Need for SSH
+## start new container interactively
+1. '-t' is peudo-tty, simulates a real terminal, like what SSH does
+2. '-i' is interactive, Keeps session open to receive terminal input
+3. this gives us an equivalent of interactive shell.
+docker container run -it
+> bash shell
+> if run with -it, it will give you a terminal inside the running container
+> 'root' is user that the container started as. This doesn't mean i'm root in the host.
+> acting root on container, then followed by container ID
+## run additional command in existing container
+docker container exec -it
+docker container run -help
+```
+Usage:  docker container run [OPTIONS] IMAGE [COMMAND] [ARG...]
+Koitaro@MacBook-Pro-3 ~ % docker container run -it --name proxy nginx bash
+root@2b6b55cef748:/#
+```
+## to see root of file systems inside a container
+## looking at all files inside of a container which is based on nginx image
+```
+root@2b6b55cef748:/# ls -al
+total 72
+drwxr-xr-x   1 root root 4096 May 15 01:22 .
+drwxr-xr-x   1 root root 4096 May 15 01:22 ..
+-rwxr-xr-x   1 root root    0 May 15 01:22 .dockerenv
+drwxr-xr-x   2 root root 4096 Apr 22 00:00 bin
+drwxr-xr-x   2 root root 4096 Feb  1 17:09 boot
+drwxr-xr-x   5 root root  360 May 15 01:22 dev
+drwxr-xr-x   1 root root 4096 May 15 01:22 etc
+drwxr-xr-x   2 root root 4096 Feb  1 17:09 home
+drwxr-xr-x   1 root root 4096 Apr 23 13:02 lib
+drwxr-xr-x   2 root root 4096 Apr 22 00:00 lib64
+drwxr-xr-x   2 root root 4096 Apr 22 00:00 media
+drwxr-xr-x   2 root root 4096 Apr 22 00:00 mnt
+drwxr-xr-x   2 root root 4096 Apr 22 00:00 opt
+dr-xr-xr-x 145 root root    0 May 15 01:22 proc
+drwx------   2 root root 4096 Apr 22 00:00 root
+drwxr-xr-x   3 root root 4096 Apr 22 00:00 run
+drwxr-xr-x   2 root root 4096 Apr 22 00:00 sbin
+drwxr-xr-x   2 root root 4096 Apr 22 00:00 srv
+dr-xr-xr-x  12 root root    0 May 15 01:22 sys
+drwxrwxrwt   1 root root 4096 Apr 23 13:02 tmp
+drwxr-xr-x   1 root root 4096 Apr 22 00:00 usr
+drwxr-xr-x   1 root root 4096 Apr 22 00:00 var
+root@2b6b55cef748:/#
+```
+## to get out of shell
+## Now, the container stopped
+```
+root@2b6b55cef748:/# exit
+exit
+Koitaro@MacBook-Pro-3 ~ %
+```
+## Notice there is no container named proxy because it stopped
+```
+Koitaro@MacBook-Pro-3 ~ % docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+```
+## Notice there is the container named proxy here
+## when we typed 'bash' above, we changed the default program to bash, which gave us a shell.
+## when we exited a shell, the container stopped. 
+```
+Koitaro@MacBook-Pro-3 ~ % docker container ls -a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                          PORTS               NAMES
+2b6b55cef748        nginx               "bash"              7 minutes ago       Exited (0) About a minute ago                       proxy
+```
+## its default CMD is bash, so we don't have to spedify it
+## this gonna download ubutu image, and place me a prompt of new container
+docker container run -it --name ubuntu ubuntu
+
+## we can use ubutu's apt package manage like below
+apt-get update
+
+## then we can actually install something such as below
+atp-get install -y curl
+
+## Now, we have curl in the container and we can use it
+curl google.com
+
+## By 'exit', the shell stops container 
+exit
+
+## check if we don't see the container
+docker container ls
+
+## we can see ubutu imange here
+## when we start that container up again, but we create a new container from ubutu image
+## this different container doesn't have curl command line installed
+docker container ls -a
+<br>
+docker container start --help
+
+## if we want to re-run that container, and git bush right back in it, we can use 'docker container start'
+docker container start -ai ubuntu
+
+## 'curl' can work, because we re-run the container in which curl has been installed
+curl google.com
+
+## 'exit' stops again
+exit
+<br>
+docker container exec --help
+
+## when we want to see the shell inside of running container that is already running like nginx
+## we can use 'exec' command
+## -it [name of the container] [program I want to run]
+## Now, in the container with mysql
+## 'exec -it' does exactly the same thing as run but it does it on an existing container that's runnig, not starting new container
+docker container exec -it mysql bash
+
+## List processes, we see mysql demon running in the background as well as bash process and ps command I just ran
+ps aux
+
+## exit
+exit
+
+## check if mysql is still running, becaue 'docker container exec' runs an additional process on an existing running container
+## it's not going to affect the root process of mysql demon
+docker container ls
+
+## pull down the latest alpine image
+## alpine comes with its own package managerd
+docker pull alpine
+<br>
+docker image ls
+
+## let's do a bash shell inside of alpine, why error? bash is not in the container?
+## alpine doesn't have bash
+docker container run -it alpine bash
+<br>
+docker container run -it alpine sh
