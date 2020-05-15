@@ -221,7 +221,7 @@ docker container top
 ## show metadata of container (startup config, volumes, networking etc) 
 docker container inspect
 ![docker_container_stats](https://github.com/NoriKaneshige/Docker_Creating_Using_Containers/blob/master/docker_container_stats.png)
-```
+
 ## show all performance stats for all containers
 docker container stats
 ```
