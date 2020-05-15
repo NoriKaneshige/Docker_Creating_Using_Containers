@@ -773,7 +773,7 @@ Koitaro@MacBook-Pro-3 ~ % docker network inspect my_app_net
 ```
 ## we also don't need to creat/start a new container to make new connection.
 ## we can use existing networks and existing containers
-## check blew if you can see two networks, bridge and my_app_net
+## check below if you can see two networks, bridge and my_app_net
 ```
 Koitaro@MacBook-Pro-3 ~ % docker network --help
 
@@ -1057,7 +1057,7 @@ Koitaro@MacBook-Pro-3 ~ % docker container inspect 79d9f7d0e3ac
 ]
 ```
 ## we can disconnect existing networks and existing containers
-## check blew if you can see only original network, which is bridge
+## check below if you can see only original network, which is bridge
 ```
 Koitaro@MacBook-Pro-3 ~ % docker network disconnect 758b53ad1fc9 79d9f7d0e3ac
 Koitaro@MacBook-Pro-3 ~ % docker container inspect 79d9f7d0e3ac
