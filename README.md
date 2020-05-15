@@ -1803,5 +1803,17 @@ Koitaro@MacBook-Pro-3 ~ % docker network inspect 758b53ad1fc9
     }
 ]
 ```
-
+# Question: Which command would we use to get an overview look of information about a specific container like Networks, IP address, mounts, and current status?
+## Answer: docker container inspect
+## This shows you the container configuration. It can also be modified to only return a specific piece of data using the —format flag
+---
+# Question: In order to connect to a shell inside of a container, you should use docker ssh to get inside
+## Answer: False
+## By using the 'docker exec -it <container> sh' (or bash) command on a container, we can connect to a shell from inside it.
+---
+# Question: If you wanted multiple containers to be able to communicate with each other on the same docker host, which network driver would you use?
+## Answer: bridge
+## the default bridge network driver allows containers to communicate with each other when running on the same docker host.
+---
+ 
 
